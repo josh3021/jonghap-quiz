@@ -338,13 +338,24 @@ export function useQuiz() {
 
   const submitAnswer = (timeout = false) => {
     if (showFeedback) return;
-
+  
     const current = quizQuestions[currentQuestion];
     const answer = timeout ? "" : userAnswer.trim();
-
+  
+    // 빈칸 답변은 무조건 오답 처리
+    if (answer === "") {
+      setAnswers([
+        ...answers,
+        { question: current, userAnswer: answer, correct: false },
+      ]);
+      setLastAnswerCorrect(false);
+      setShowFeedback(true);
+      return;
+    }
+  
     // 문제 유형별로 다른 정답 판정 로직 적용
     let correct = false;
-
+  
     if (current.type === "sajaseongeo" || current.type === "sokdam") {
       // 사자성어, 속담: 유사도 검사 (문맥이 비슷하면 정답)
       correct = isSimilarAnswer(answer, current.answer);
@@ -355,7 +366,7 @@ export function useQuiz() {
       // 구구단: 정확한 일치만 정답으로 인정
       correct = answer.toLowerCase() === current.answer.toLowerCase();
     }
-
+  
     setAnswers([
       ...answers,
       { question: current, userAnswer: answer, correct },
@@ -363,7 +374,7 @@ export function useQuiz() {
     setLastAnswerCorrect(correct);
     setShowFeedback(true);
   };
-
+  
   const proceedToNext = () => {
     setShowFeedback(false);
     setIsTimeout(false);
